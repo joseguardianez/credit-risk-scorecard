@@ -67,6 +67,14 @@
   .dek{max-width:62ch; font-size:16px; color:var(--ink-soft); margin:0;}
   .byline{font-size:13.5px; color:var(--ink-soft); margin-top:2px;}
   .byline a{font-weight:600;}
+  .nav-link{margin-top:14px;}
+  .nav-link a{
+    display:inline-flex; align-items:center; gap:6px;
+    font-size:13.5px; font-weight:600; color:var(--pine-strong);
+    background:var(--pine-tint); border-radius:999px; padding:9px 16px;
+    text-decoration:none;
+  }
+  .nav-link a:hover{opacity:.85;}
 
   section.panel{
     background:var(--surface); border:1px solid var(--line); border-radius:12px;
@@ -125,7 +133,8 @@
       <div class="eyebrow"><span class="dot"></span> Credit Risk Scorecard &middot; Interactive Tool</div>
       <h1>Credit Risk Calculator</h1>
       <p class="dek">Enter an applicant's profile below. The score is computed client-side from the same WOE-binned logistic regression scorecard used in the full project &mdash; no server-side model, just the real trained point values.</p>
-      <p class="byline">Every submission is saved for review. See the full methodology in the <a href="#">Credit Risk Scorecard writeup</a>.</p>
+      <p class="byline">Every submission is saved for review. See the full methodology in the <a href="index.html">Credit Risk Scorecard writeup</a>.</p>
+      <p class="nav-link"><a href="index.html">&larr; Back to the full scorecard writeup</a></p>
     </div>
 
     <section class="panel">
@@ -299,7 +308,7 @@
   }
 
   // Your deployed Google Apps Script Web App URL
-  const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxrYrAPEO27gqLh3Hqapu9G9yb7NHwOlLQkL01bEUr6G7bQuBWBlPdTjUq0jVndWRDQ/exec";
+  const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyvplgz7ku007oAG6feNlSgDNBxl0adGMHqxEaNp_s8vlRdVvmkDTh6ITfaZme4vCM/exec";
 
   document.getElementById('calc-btn').addEventListener('click', function () {
     const inputs = {
