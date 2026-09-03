@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Credit Risk Calculator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Public+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#EFF3EA;
+    --surface:#FAFCF6;
+    --ink:#171B15;
+    --ink-soft:#4B5647;
+    --pine:#1E4B39;
+    --pine-strong:#123825;
+    --pine-tint:#DCE9DE;
+    --oxblood:#8B3A34;
+    --oxblood-tint:#F3DEDB;
+    --gold:#8A6A22;
+    --line:#D3D9C9;
+    --shadow: 0 1px 2px rgba(23,27,21,.06), 0 6px 20px -8px rgba(23,27,21,.12);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --paper:#10140E; --surface:#161C11; --ink:#E7ECDF; --ink-soft:#9AA68E;
+      --pine:#5CB58B; --pine-strong:#7FD1AA; --pine-tint:#1C2E22;
+      --oxblood:#D07A72; --oxblood-tint:#3A2220; --gold:#D1A857; --line:#2A3323;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 10px 30px -10px rgba(0,0,0,.5);
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#10140E; --surface:#161C11; --ink:#E7ECDF; --ink-soft:#9AA68E;
+    --pine:#5CB58B; --pine-strong:#7FD1AA; --pine-tint:#1C2E22;
+    --oxblood:#D07A72; --oxblood-tint:#3A2220; --gold:#D1A857; --line:#2A3323;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 10px 30px -10px rgba(0,0,0,.5);
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0; padding:0;}
+  body{
+    background:var(--paper); color:var(--ink);
+    font-family:'Public Sans', system-ui, sans-serif; line-height:1.5;
+  }
+  ::selection{background:var(--pine-tint); color:var(--pine-strong);}
+  a{color:var(--pine-strong);}
+  :focus-visible{outline:2px solid var(--pine); outline-offset:2px;}
+  .num{font-family:'IBM Plex Mono', ui-monospace, monospace; font-variant-numeric: tabular-nums;}
+
+  .wrap{max-width:820px; margin:0 auto; padding:56px 24px 80px;}
+
+  .hero{
+    display:flex; flex-direction:column; gap:14px;
+    padding-bottom:36px; margin-bottom:36px; border-bottom:1px solid var(--line);
+  }
+  .eyebrow{
+    font-family:'IBM Plex Mono', monospace; font-size:12.5px; letter-spacing:.09em;
+    text-transform:uppercase; color:var(--ink-soft); display:flex; align-items:center; gap:10px;
+  }
+  .eyebrow .dot{width:6px;height:6px;border-radius:50%;background:var(--pine);}
+  h1{
+    font-family:'Fraunces', serif; font-weight:600; font-optical-sizing:auto;
+    font-size:clamp(30px, 5vw, 46px); line-height:1.05; margin:0;
+    text-wrap:balance; color:var(--ink); letter-spacing:-.01em;
+  }
+  .dek{max-width:62ch; font-size:16px; color:var(--ink-soft); margin:0;}
+  .byline{font-size:13.5px; color:var(--ink-soft); margin-top:2px;}
+  .byline a{font-weight:600;}
+  .nav-link{margin-top:14px;}
+  .nav-link a{
+    display:inline-flex; align-items:center; gap:6px;
+    font-size:13.5px; font-weight:600; color:var(--pine-strong);
+    background:var(--pine-tint); border-radius:999px; padding:9px 16px;
+    text-decoration:none;
+  }
+  .nav-link a:hover{opacity:.85;}
+
+  section.panel{
+    background:var(--surface); border:1px solid var(--line); border-radius:12px;
+    padding:28px; box-shadow:var(--shadow); margin-bottom:24px;
+  }
+  .panel-head{margin-bottom:20px;}
+  .panel-head h2{
+    font-family:'Fraunces', serif; font-weight:600; font-size:20px; margin:0 0 4px; color:var(--ink);
+  }
+  .panel-head p{margin:0; font-size:13.5px; color:var(--ink-soft);}
+
+  form{display:grid; grid-template-columns:1fr 1fr; gap:18px 20px;}
+  @media (max-width:560px){ form{grid-template-columns:1fr;} }
+
+  .field{display:flex; flex-direction:column; gap:6px;}
+  .field label{font-size:13px; color:var(--ink-soft); font-weight:500;}
+  .field input{
+    font-family:'IBM Plex Mono', monospace; font-size:15px; color:var(--ink);
+    background:var(--paper); border:1px solid var(--line); border-radius:7px;
+    padding:10px 12px; width:100%;
+  }
+  .field input:focus-visible{outline:2px solid var(--pine); outline-offset:1px;}
+  .field .hint{font-size:11.5px; color:var(--ink-soft); opacity:.8;}
+
+  .actions{grid-column:1 / -1; display:flex; align-items:center; gap:14px; margin-top:6px;}
+  button.calc{
+    font-family:'Public Sans', sans-serif; font-weight:600; font-size:15px;
+    background:var(--pine-strong); color:var(--surface); border:none; border-radius:8px;
+    padding:13px 22px; cursor:pointer; transition:opacity .15s ease;
+  }
+  button.calc:hover{opacity:.88;}
+  button.calc:active{opacity:.75;}
+  #save-status{font-size:13px; color:var(--ink-soft);}
+
+  #result{
+    display:none; margin-top:6px; padding-top:22px; border-top:1px solid var(--line);
+  }
+  #result.show{display:block;}
+  .result-grid{display:grid; grid-template-columns:1fr 1fr; gap:1px; background:var(--line); border:1px solid var(--line); border-radius:10px; overflow:hidden;}
+  @media (max-width:560px){ .result-grid{grid-template-columns:1fr;} }
+  .result-tile{background:var(--surface); padding:20px;}
+  .result-tile .label{font-size:12.5px; color:var(--ink-soft); text-transform:uppercase; letter-spacing:.06em; margin-bottom:6px;}
+  .result-tile .value{font-family:'IBM Plex Mono', monospace; font-weight:600; font-size:28px; color:var(--pine-strong);}
+  .result-tile.risk-high .value{color:var(--oxblood);}
+  .result-tile.risk-medium .value{color:var(--gold);}
+  .result-note{font-size:12.5px; color:var(--ink-soft); margin-top:14px;}
+
+  footer{font-size:12.5px; color:var(--ink-soft); text-align:center; padding-top:8px;}
+  footer a{color:var(--ink-soft); text-decoration:underline;}
+</style>
+</head>
+<body>
+  <div class="wrap">
+
+    <div class="hero">
+      <div class="eyebrow"><span class="dot"></span> Credit Risk Scorecard &middot; Interactive Tool</div>
+      <h1>Credit Risk Calculator</h1>
+      <p class="dek">Enter an applicant's profile below. The score is computed client-side from the same WOE-binned logistic regression scorecard used in the full project &mdash; no server-side model, just the real trained point values.</p>
+      <p class="byline">Every submission is saved for review. See the full methodology in the <a href="index.html">Credit Risk Scorecard writeup</a>.</p>
+      <p class="nav-link"><a href="index.html">&larr; Back to the full scorecard writeup</a></p>
+    </div>
+
+    <section class="panel">
+      <div class="panel-head">
+        <h2>Applicant profile</h2>
+        <p>All ten fields feed the same model as the training data.</p>
+      </div>
+
+      <form id="calc-form">
+        <div class="field">
+          <label for="age">Age</label>
+          <input type="number" id="age" value="35" min="18" max="110" step="1">
+        </div>
+        <div class="field">
+          <label for="income">Monthly income ($)</label>
+          <input type="number" id="income" value="5000" min="0" step="100">
+        </div>
+        <div class="field">
+          <label for="utilization">Credit utilization</label>
+          <input type="number" id="utilization" value="0.30" min="0" max="3" step="0.01">
+          <span class="hint">Balances &divide; credit limits, e.g. 0.30 = 30%</span>
+        </div>
+        <div class="field">
+          <label for="debtRatio">Debt ratio</label>
+          <input type="number" id="debtRatio" value="0.30" min="0" max="5" step="0.01">
+          <span class="hint">Monthly debt payments &divide; monthly income</span>
+        </div>
+        <div class="field">
+          <label for="openCredit">Open credit lines &amp; loans</label>
+          <input type="number" id="openCredit" value="8" min="0" max="60" step="1">
+        </div>
+        <div class="field">
+          <label for="realEstate">Real estate loans/lines</label>
+          <input type="number" id="realEstate" value="1" min="0" max="30" step="1">
+        </div>
+        <div class="field">
+          <label for="dependents">Dependents</label>
+          <input type="number" id="dependents" value="0" min="0" max="20" step="1">
+        </div>
+        <div class="field">
+          <label for="late3059">Times 30&ndash;59 days late</label>
+          <input type="number" id="late3059" value="0" min="0" max="20" step="1">
+        </div>
+        <div class="field">
+          <label for="late6089">Times 60&ndash;89 days late</label>
+          <input type="number" id="late6089" value="0" min="0" max="20" step="1">
+        </div>
+        <div class="field">
+          <label for="late90">Times 90+ days late</label>
+          <input type="number" id="late90" value="0" min="0" max="20" step="1">
+        </div>
+
+        <div class="actions">
+          <button type="button" class="calc" id="calc-btn">Calculate &amp; Save</button>
+          <span id="save-status"></span>
+        </div>
+      </form>
+
+      <div id="result">
+        <div class="result-grid">
+          <div class="result-tile" id="score-tile">
+            <div class="label">Credit score</div>
+            <div class="value num" id="score-value">&mdash;</div>
+          </div>
+          <div class="result-tile" id="risk-tile">
+            <div class="label">Risk level</div>
+            <div class="value" id="risk-value">&mdash;</div>
+          </div>
+        </div>
+        <p class="result-note" id="result-note"></p>
+      </div>
+    </section>
+
+    <!-- Hidden form + iframe: submits to the Apps Script backend as a real form post,
+         which avoids the fetch()/CORS quirks Google Apps Script's /exec endpoint has. -->
+    <form id="save-form" action="" method="POST" target="save-frame" style="display:none;">
+      <input type="hidden" name="payload" id="payload-field">
+    </form>
+    <iframe name="save-frame" style="display:none;"></iframe>
+
+    <footer>
+      Built from a scorecard trained and validated on 150,000 historical borrowers (AUC 0.856, KS 0.556). Not a real lending decision tool &mdash; a portfolio project demonstrating the modeling pipeline end to end.
+    </footer>
+
+  </div>
+
+<script>
+  // Real trained scorecard, exported directly from the Colab notebook's `card` object.
+  // basepoints + sum of the matching bin's points across all 10 variables = final score.
+  const BASEPOINTS = 576.0;
+
+  const CARD = {
+    RevolvingUtilizationOfUnsecuredLines: [
+      [-Infinity, 0.15000000000000002, 56.0],
+      [0.15000000000000002, 0.5, 18.0],
+      [0.5, 0.8500000000000001, -25.0],
+      [0.8500000000000001, Infinity, -59.0]
+    ],
+    age: [
+      [-Infinity, 44.0, -14.0],
+      [44.0, 58.0, -3.0],
+      [58.0, 68.0, 16.0],
+      [68.0, Infinity, 35.0]
+    ],
+    'NumberOfTime30-59DaysPastDueNotWorse': [
+      [-Infinity, 1.0, 21.0],
+      [1.0, 2.0, -34.0],
+      [2.0, Infinity, -73.0]
+    ],
+    DebtRatio: [
+      [-Infinity, 0.4, 9.0],
+      [0.4, 0.55, -7.0],
+      [0.55, 0.7000000000000001, -25.0],
+      [0.7000000000000001, 2.7, -41.0],
+      [2.7, Infinity, 13.0]
+    ],
+    MonthlyIncome: [
+      [-Infinity, 5000.0, -2.0],
+      [5000.0, 7500.0, 1.0],
+      [7500.0, 10000.0, 2.0],
+      [10000.0, Infinity, 4.0]
+    ],
+    NumberOfOpenCreditLinesAndLoans: [
+      [-Infinity, 3.0, -6.0],
+      [3.0, 14.0, 1.0],
+      [14.0, Infinity, 0.0]
+    ],
+    NumberOfTimes90DaysLate: [
+      [-Infinity, 1.0, 16.0],
+      [1.0, Infinity, -92.0]
+    ],
+    NumberRealEstateLoansOrLines: [
+      [-Infinity, 1.0, -10.0],
+      [1.0, 2.0, 11.0],
+      [2.0, 3.0, 8.0],
+      [3.0, Infinity, -11.0]
+    ],
+    'NumberOfTime60-89DaysPastDueNotWorse': [
+      [-Infinity, 1.0, 8.0],
+      [1.0, Infinity, -61.0]
+    ],
+    NumberOfDependents: [
+      [-Infinity, 1.0, 2.0],
+      [1.0, 2.0, -1.0],
+      [2.0, 3.0, -3.0],
+      [3.0, Infinity, -4.0]
+    ]
+  };
+
+  function pointsFor(variable, value) {
+    const bins = CARD[variable];
+    for (const [lo, hi, pts] of bins) {
+      if (value >= lo && value < hi) return pts;
+    }
+    return 0; // shouldn't happen — bins are exhaustive
+  }
+
+  function scoreApplicant(inputs) {
+    let score = BASEPOINTS;
+    score += pointsFor('RevolvingUtilizationOfUnsecuredLines', inputs.utilization);
+    score += pointsFor('age', inputs.age);
+    score += pointsFor('NumberOfTime30-59DaysPastDueNotWorse', inputs.late3059);
+    score += pointsFor('DebtRatio', inputs.debtRatio);
+    score += pointsFor('MonthlyIncome', inputs.income);
+    score += pointsFor('NumberOfOpenCreditLinesAndLoans', inputs.openCredit);
+    score += pointsFor('NumberOfTimes90DaysLate', inputs.late90);
+    score += pointsFor('NumberRealEstateLoansOrLines', inputs.realEstate);
+    score += pointsFor('NumberOfTime60-89DaysPastDueNotWorse', inputs.late6089);
+    score += pointsFor('NumberOfDependents', inputs.dependents);
+    return Math.round(score);
+  }
+
+  // Risk labels based on your own validated default rates by score band (see dashboard)
+  function riskLevel(score) {
+    if (score < 480) return { label: 'High Risk', tier: 'high', note: 'Validated default rate: ~34-61% in this range.' };
+    if (score < 636) return { label: 'Medium Risk', tier: 'medium', note: 'Validated default rate: ~2-19% in this range.' };
+    return { label: 'Low Risk', tier: 'low', note: 'Validated default rate: under 2% in this range.' };
+  }
+
+  // Your deployed Google Apps Script Web App URL
+  const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzT8laKxskE4xSoKyn4-xvJzh3qM5ZEKZlAvrRTMMeZgYp9CNnyx10s3b_fjJBwpes/exec";
+  document.getElementById('save-form').action = WEB_APP_URL;
+
+  document.getElementById('calc-btn').addEventListener('click', function () {
+    const inputs = {
+      age: parseFloat(document.getElementById('age').value),
+      income: parseFloat(document.getElementById('income').value),
+      utilization: parseFloat(document.getElementById('utilization').value),
+      debtRatio: parseFloat(document.getElementById('debtRatio').value),
+      openCredit: parseFloat(document.getElementById('openCredit').value),
+      realEstate: parseFloat(document.getElementById('realEstate').value),
+      dependents: parseFloat(document.getElementById('dependents').value),
+      late3059: parseFloat(document.getElementById('late3059').value),
+      late6089: parseFloat(document.getElementById('late6089').value),
+      late90: parseFloat(document.getElementById('late90').value)
+    };
+
+    if (Object.values(inputs).some(v => Number.isNaN(v))) {
+      document.getElementById('save-status').textContent = 'Please fill in every field with a number.';
+      return;
+    }
+
+    const score = scoreApplicant(inputs);
+    const risk = riskLevel(score);
+
+    document.getElementById('score-value').textContent = score;
+    document.getElementById('risk-value').textContent = risk.label;
+    document.getElementById('result-note').textContent = risk.note;
+
+    const riskTile = document.getElementById('risk-tile');
+    riskTile.classList.remove('risk-high', 'risk-medium');
+    if (risk.tier === 'high') riskTile.classList.add('risk-high');
+    if (risk.tier === 'medium') riskTile.classList.add('risk-medium');
+
+    document.getElementById('result').classList.add('show');
+
+    // Save this submission to the Google Sheet backend via a hidden form post
+    // (a real form submission, not fetch() — sidesteps Apps Script's CORS/redirect quirks)
+    document.getElementById('payload-field').value = JSON.stringify({
+      age: inputs.age, income: inputs.income, utilization: inputs.utilization,
+      debtRatio: inputs.debtRatio, openCredit: inputs.openCredit, realEstate: inputs.realEstate,
+      dependents: inputs.dependents, late3059: inputs.late3059, late6089: inputs.late6089,
+      late90: inputs.late90, score: score, riskLevel: risk.label
+    });
+    document.getElementById('save-form').submit();
+    document.getElementById('save-status').textContent = 'Submitted — check your Google Sheet to confirm it landed.';
+  });
+</script>
+</body>
+</html>
